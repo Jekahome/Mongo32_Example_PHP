@@ -1,0 +1,71 @@
+$cursor = $this->collection->find(
+                                            ['status' => 1],//ключ поиска
+                                            [//массив опций
+                                                'sort' => ['create_time' => -1],
+                                                'limit' => self::limitShowRecalls,
+                                                'skip' => $key * self::limitShowRecalls
+                                            ]
+                                        );
+
+
+$this->collection->findOne(
+                                                ['_id' => (int) $recall_id, 'status' => 1],
+                                                [
+                                                    'projection' => [//условие выдачи
+                                                        'like_collection'  => 1,
+                                                        'dislike_collection' => 1,
+                                                        'like' => 1,
+                                                        'dislike' => 1,
+                                                    ]
+                                                ]
+
+$collection->updateOne(['recall' => $cursor['recall']],['$set' => ['recall' => $newId,'moder' => $newModerationId]]);
+
+ $result = $this->collection->findOneAndUpdate(
+                                                        ['_id' => (int) $recall_id, 'status' => 1],
+                                                        $updateParams,
+                                                        [
+                                                            'projection' => ['like' => 1, 'dislike' => 1],
+                                                            'returnDocument' => 2 // 1 - старый док., 2 - новый док.
+                                                        ]
+                                                    );
+
+//                $document = $collection->aggregate(
+//                                            [
+//                                                ['$lookup' => [
+//                                                    'from' => 'idcFraudPeopleCache',
+//                                                    'localField' => '_id',
+//                                                    'foreignField' => '_id',
+//                                                    'as' => 'inventory_docs'
+//                                                ]],
+//                                                ['$project' => [
+//                                                    '_id' => 0,
+//                                                    'nameCollection' => 1,
+//                                                    'person_name' => ['$inventory_docs.person_name']]
+//                                                ]
+//                                            ]
+//                                        );
+
+$document = $collection->insertOne(['nameCollection' => 'fpc']);
+$document->getModifiedCount();
+
+$document = $collection->replaceOne(['_id' => (int) 914], ['aaa' => '1212']); // замена документа
+
+------------------------------------------------------------------------------------
+
+'mongodb' => [
+            'class' => '\common\components\mongodb\Client',
+            'dsn' => 'mongodb://127.0.0.1:27017',
+            'uriOptions' => [],
+            'driverOptions' => ['typeMap' => ['root' => 'array', 'document' => 'array']],
+            'nameDatabase' => 'idc_blacklist'
+        ],
+
+//------------------------------------------------------------------------------------
+
+$this->mongoClient =  Yii::$app->mongodb->selectDatabase('blacklist_test'); // подключение к базе
+$this->collection = $this->mongoClient->selectCollection('recalls'); // подключение к коллекции
+
+
+$this->collection = $this->mongoClient->selectCollection('blacklist_test', 'recalls');
+
